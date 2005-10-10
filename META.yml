@@ -1,0 +1,21 @@
+---
+name: Catalyst-Engine-Apache
+version: 0.99
+author: ~
+abstract: Catalyst Apache Engines
+license: perl
+requires:
+  Catalyst: 5.49
+provides:
+  Catalyst::Engine::Apache:
+    file: lib/Catalyst/Engine/Apache.pm
+    version: 0.99
+  Catalyst::Engine::Apache2:
+    file: lib/Catalyst/Engine/Apache2.pm
+  Catalyst::Engine::Apache2::MP19:
+    file: lib/Catalyst/Engine/Apache2/MP19.pm
+  Catalyst::Engine::Apache2::MP20:
+    file: lib/Catalyst/Engine/Apache2/MP20.pm
+  Catalyst::Engine::Apache::MP13:
+    file: lib/Catalyst/Engine/Apache/MP13.pm
+generated_by: Module::Build version 0.2611

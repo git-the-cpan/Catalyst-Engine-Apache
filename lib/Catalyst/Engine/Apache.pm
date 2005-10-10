@@ -1,0 +1,248 @@
+package Catalyst::Engine::Apache;
+
+use strict;
+use warnings;
+use base 'Catalyst::Engine';
+
+use File::Spec;
+use URI;
+use URI::Query;
+
+our $VERSION = "0.99";
+
+__PACKAGE__->mk_accessors(qw/apache/);
+
+sub prepare_request {
+    my ( $self, $c, $r ) = @_;
+    $self->apache( $r );
+}
+
+sub prepare_connection {
+    my ( $self, $c ) = @_;
+    
+    $c->request->address( $self->apache->connection->remote_ip );
+    
+    PROXY_CHECK:
+    {
+        my $headers = $self->apache->headers_in;
+        unless ( $c->config->{using_frontend_proxy} ) {
+            last PROXY_CHECK if $c->request->address ne '127.0.0.1';
+            last PROXY_CHECK if $c->config->{ignore_frontend_proxy};
+        }
+        last PROXY_CHECK unless $headers->{'X-Forwarded-For'};
+        
+        # If we are running as a backend server, the user will always appear
+        # as 127.0.0.1. Select the most recent upstream IP (last in the list)
+        my ($ip) = $headers->{'X-Forwarded-For'} =~ /([^,\s]+)$/;
+        $c->request->address( $ip );
+    }
+    
+    $c->request->hostname( $self->apache->connection->remote_host );
+    $c->request->protocol( $self->apache->protocol );
+    $c->request->user( $self->apache->user );
+
+    if ( $ENV{HTTPS} && uc( $ENV{HTTPS} ) eq 'ON' ) {
+        $c->request->secure(1);
+    }
+
+    if ( $self->apache->get_server_port == 443 ) {
+        $c->request->secure(1);
+    }
+}
+
+sub prepare_query_parameters {
+    my ( $self, $c ) = @_;
+    
+    my $query_string = $self->apache->args;
+    my $u = URI::Query->new( $query_string );
+    $c->request->query_parameters( { $u->hash } );    
+}
+
+sub prepare_headers {
+    my ( $self, $c ) = @_;
+    $c->request->method( $self->apache->method );
+    $c->request->header( %{ $self->apache->headers_in } );
+}
+
+sub prepare_path {
+    my ( $self, $c ) = @_;
+    
+    my $scheme = $c->request->secure ? 'https' : 'http';
+    my $host   = $self->apache->hostname;
+    my $port   = $self->apache->get_server_port;
+    
+    # If we are running as a backend proxy, get the true hostname
+    PROXY_CHECK:
+    {
+        unless ( $c->config->{using_frontend_proxy} ) {
+            last PROXY_CHECK if $host !~ /localhost|127.0.0.1/;
+            last PROXY_CHECK if $c->config->{ignore_frontend_proxy};
+        }
+        last PROXY_CHECK unless $c->request->header( 'X-Forwarded-Host' );
+
+        $host = $c->request->header( 'X-Forwarded-Host' );
+        # backend could be on any port, so
+        # assume frontend is on the default port
+        $port = $c->request->secure ? 443 : 80;
+    }
+
+    my $base_path = '';
+
+    # Are we running in a non-root Location block?
+    my $location = $self->apache->location;
+    if ( $location && $location ne '/' ) {
+        $base_path = $location;
+    }
+    
+    # Are we an Apache::Registry script? Why anyone would ever want to run
+    # this way is beyond me, but we'll support it!
+    if ( $self->apache->filename && -f $self->apache->filename && -x _ ) {
+        $base_path .= $ENV{SCRIPT_NAME};
+    }
+    
+    my $uri = URI->new;
+    $uri->scheme($scheme);
+    $uri->host($host);
+    $uri->port($port);
+    $uri->path( $self->apache->uri );
+    my $query_string = $self->apache->args;
+    $uri->query( $query_string );
+
+    # sanitize the URI
+    $uri = $uri->canonical;
+    $c->request->uri( $uri );
+
+    # set the base URI
+    # base must end in a slash
+    $base_path .= '/' unless ( $base_path =~ /\/$/ );
+    my $base = $uri->clone;
+    $base->path_query( $base_path );
+    $base = $base->canonical;
+    $c->request->base( $base );
+}
+
+sub read_chunk {
+    my $self = shift;
+    my $c = shift;
+    
+    $self->apache->read( @_ );
+}
+
+sub finalize_headers {
+    my ( $self, $c ) = @_;
+
+    for my $name ( $c->response->headers->header_field_names ) {
+        next if $name =~ /^Content-(Length|Type)$/i;
+        my @values = $c->response->header($name);
+        # allow X headers to persist on error
+        if ( $name =~ /^X-/i ) {
+            $self->apache->err_headers_out->add( $name => $_ ) for @values;
+        }
+        else {
+            $self->apache->headers_out->add( $name => $_ ) for @values;
+        }
+    }
+
+    if ( $c->response->header('Set-Cookie') && $c->response->status >= 300 ) {
+        my @values = $c->response->header('Set-Cookie');
+        $self->apache->err_headers_out->add( 'Set-Cookie' => $_ ) for @values;
+    }
+
+    $self->apache->status( $c->response->status );
+
+    my $type = $c->response->header('Content-Type') || 'text/plain';
+    $self->apache->content_type( $type );
+
+    if ( my $length = $c->response->content_length ) {
+        $self->apache->set_content_length( $length );
+    }
+
+    return 0;
+}
+
+sub write {
+    my ( $self, $c, $buffer ) = @_;
+    
+    # emulate the other engines by calling handle.  This will cause
+    # the headers to be output if they haven't yet been.
+    $c->response->handle;
+    
+    $self->apache->print( $buffer );
+}
+
+1;
+__END__
+
+=head1 NAME
+
+Catalyst::Engine::Apache - Catalyst Apache Engines
+
+=head1 SYNOPSIS
+
+For example Apache configurations, see the documentation for the engine that
+corresponds to your Apache version.
+
+C<Catalyst::Engine::Apache::MP13>  - mod_perl 1.3x
+
+C<Catalyst::Engine::Apache2::MP19> - mod_perl 1.99x
+
+C<Catalyst::Engine::Apache2::MP20> - mod_perl 2.x
+
+=head1 DESCRIPTION
+
+These classes provide mod_perl support for Catalyst.
+
+=head1 METHODS
+
+=over 4
+
+=item $c->engine->apache
+
+Returns an C<Apache>, C<Apache::RequestRec> or C<Apache2::RequestRec> object,
+depending on your mod_perl version.  This method is also available as
+$c->apache.
+
+=back
+
+=head1 OVERLOADED METHODS
+
+This class overloads some methods from C<Catalyst::Engine>.
+
+=over 4
+
+=item $c->engine->prepare_request($r)
+
+=item $c->engine->prepare_connection
+
+=item $c->engine->prepare_query_parameters
+
+=item $c->engine->prepare_headers
+
+=item $c->engine->prepare_path
+
+=item $c->engine->read_chunk
+
+=item $c->engine->finalize_headers
+
+=item $c->engine->write
+
+=back
+
+=head1 SEE ALSO
+
+L<Catalyst> L<Catalyst::Engine>.
+
+=head1 AUTHORS
+
+Sebastian Riedel, <sri@cpan.org>
+
+Christian Hansen, <ch@ngmedia.com>
+
+Andy Grundman, <andy@hybridized.org>
+
+=head1 COPYRIGHT
+
+This program is free software, you can redistribute it and/or modify it under
+the same terms as Perl itself.
+
+=cut
