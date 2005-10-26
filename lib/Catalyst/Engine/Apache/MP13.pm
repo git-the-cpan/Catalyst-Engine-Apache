@@ -5,10 +5,8 @@ use warnings;
 use base 'Catalyst::Engine::Apache';
 
 use Apache            ();
-use Apache::Constants ();
+use Apache::Constants qw(:common REDIRECT);
 use Apache::File      ();
-
-Apache::Constants->import(':common');
 
 sub finalize_headers {
     my ( $self, $c ) = @_;
@@ -18,6 +16,17 @@ sub finalize_headers {
     $self->apache->send_http_header;
     
     return 0;
+}
+
+sub status_constant {
+    return {
+        200 => OK,
+        301 => REDIRECT,
+        401 => AUTH_REQUIRED,
+        403 => FORBIDDEN,
+        404 => NOT_FOUND,
+        500 => SERVER_ERROR,
+    };
 }
 
 1;

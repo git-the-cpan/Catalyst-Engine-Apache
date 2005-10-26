@@ -1,4 +1,11 @@
 This file documents the revision history for Catalyst::Engine::Apache.
 
-0.99  2005-10-10 10:15:00
+0.99001 2005-10-25 21:25:00
+        - Fixed return value from handler to use the correct
+          Apache::Const or Apache2::Const value rather than a numeric
+          value.
+        - Fixed query param handling.
+        - Added automated tests using Apache::Test.
+
+0.99    2005-10-10 10:15:00
         - Initial release, separated Apache engines from Catalyst core.

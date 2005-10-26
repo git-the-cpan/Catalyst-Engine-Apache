@@ -6,7 +6,7 @@ my $build = Module::Build->new(
     license            => 'perl',
     module_name        => 'Catalyst::Engine::Apache',
     requires           => {
-        'Catalyst'       => 5.49,
+        'Catalyst'       => '5.49_02',
     },
     create_makefile_pl => 'passthrough',
     test_files   => [

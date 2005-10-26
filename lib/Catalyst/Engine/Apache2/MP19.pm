@@ -6,13 +6,22 @@ use base 'Catalyst::Engine::Apache2';
 
 use Apache2             ();
 use Apache::Connection  ();
-use Apache::Const       ();
+use Apache::Const       -compile => ':common';
 use Apache::RequestIO   ();
 use Apache::RequestRec  ();
 use Apache::RequestUtil ();
 use Apache::Response    ();
 
-Apache::Const->import( -compile => ':common' );
+sub status_constant {
+    return {
+        200 => Apache::Const::OK,
+        301 => Apache::Const::REDIRECT,
+        401 => Apache::Const::AUTH_REQUIRED,
+        403 => Apache::Const::FORBIDDEN,
+        404 => Apache::Const::NOT_FOUND,
+        500 => Apache::Const::SERVER_ERROR,
+    };
+}
 
 1;
 __END__

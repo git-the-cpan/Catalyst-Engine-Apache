@@ -29,6 +29,7 @@ OVERLOADED METHODS
     $c->engine->prepare_headers
     $c->engine->prepare_path
     $c->engine->read_chunk
+    $c->engine->finalize_body
     $c->engine->finalize_headers
     $c->engine->write
 

@@ -6,9 +6,8 @@ use base 'Catalyst::Engine';
 
 use File::Spec;
 use URI;
-use URI::Query;
 
-our $VERSION = "0.99";
+our $VERSION = '0.99001';
 
 __PACKAGE__->mk_accessors(qw/apache/);
 
@@ -41,7 +40,7 @@ sub prepare_connection {
     $c->request->protocol( $self->apache->protocol );
     $c->request->user( $self->apache->user );
 
-    if ( $ENV{HTTPS} && uc( $ENV{HTTPS} ) eq 'ON' ) {
+    if ( $ENV{HTTPS} && uc $ENV{HTTPS} eq 'ON' ) {
         $c->request->secure(1);
     }
 
@@ -53,9 +52,9 @@ sub prepare_connection {
 sub prepare_query_parameters {
     my ( $self, $c ) = @_;
     
-    my $query_string = $self->apache->args;
-    my $u = URI::Query->new( $query_string );
-    $c->request->query_parameters( { $u->hash } );    
+    if ( my $query_string = $self->apache->args ) { # stringify
+        $self->SUPER::prepare_query_parameters( $c, $query_string );
+    }
 }
 
 sub prepare_headers {
@@ -86,7 +85,7 @@ sub prepare_path {
         $port = $c->request->secure ? 443 : 80;
     }
 
-    my $base_path = '';
+    my $base_path = q{};
 
     # Are we running in a non-root Location block?
     my $location = $self->apache->location;
@@ -128,6 +127,25 @@ sub read_chunk {
     $self->apache->read( @_ );
 }
 
+sub finalize_body {
+    my ( $self, $c ) = @_;
+    
+    $self->SUPER::finalize_body($c);
+    
+    # Data sent using $self->apache->print is buffered, so we need
+    # to flush it after we are done writing.
+    $self->apache->rflush;
+    
+    # We have to return the correct Const value.
+    # If we try to return a value like '200', Apache may get confused
+    # and add an 'internal server error' HTML page to every request.
+    # This falls back to the old method if no constant exists for the current
+    # status.
+    my $status = $c->response->status;
+    my $constant = $self->status_constant->{$status};
+    $c->response->status( defined $constant ? $constant : $status );
+}
+
 sub finalize_headers {
     my ( $self, $c ) = @_;
 
@@ -163,11 +181,9 @@ sub finalize_headers {
 sub write {
     my ( $self, $c, $buffer ) = @_;
     
-    # emulate the other engines by calling handle.  This will cause
-    # the headers to be output if they haven't yet been.
-    $c->response->handle;
-    
-    $self->apache->print( $buffer );
+    if ( ! $self->apache->connection->aborted ) {
+        $self->apache->print( $buffer );
+    }
 }
 
 1;
@@ -221,6 +237,8 @@ This class overloads some methods from C<Catalyst::Engine>.
 =item $c->engine->prepare_path
 
 =item $c->engine->read_chunk
+
+=item $c->engine->finalize_body
 
 =item $c->engine->finalize_headers
 
