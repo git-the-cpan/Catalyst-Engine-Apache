@@ -7,7 +7,7 @@ use base 'Catalyst::Engine';
 use File::Spec;
 use URI;
 
-our $VERSION = '0.99001';
+our $VERSION = '0.99002';
 
 __PACKAGE__->mk_accessors(qw/apache/);
 
@@ -135,15 +135,6 @@ sub finalize_body {
     # Data sent using $self->apache->print is buffered, so we need
     # to flush it after we are done writing.
     $self->apache->rflush;
-    
-    # We have to return the correct Const value.
-    # If we try to return a value like '200', Apache may get confused
-    # and add an 'internal server error' HTML page to every request.
-    # This falls back to the old method if no constant exists for the current
-    # status.
-    my $status = $c->response->status;
-    my $constant = $self->status_constant->{$status};
-    $c->response->status( defined $constant ? $constant : $status );
 }
 
 sub finalize_headers {
@@ -166,7 +157,10 @@ sub finalize_headers {
         $self->apache->err_headers_out->add( 'Set-Cookie' => $_ ) for @values;
     }
 
+    # The trick with Apache is to set the status code in $apache->status but
+    # always return the OK constant back to Apache from the handler.
     $self->apache->status( $c->response->status );
+    $c->response->status( $self->ok_constant );
 
     my $type = $c->response->header('Content-Type') || 'text/plain';
     $self->apache->content_type( $type );
@@ -182,8 +176,9 @@ sub write {
     my ( $self, $c, $buffer ) = @_;
     
     if ( ! $self->apache->connection->aborted ) {
-        $self->apache->print( $buffer );
+        return $self->apache->print( $buffer );
     }
+    return;
 }
 
 1;

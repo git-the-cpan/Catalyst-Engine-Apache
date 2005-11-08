@@ -5,7 +5,7 @@ use warnings;
 use base 'Catalyst::Engine::Apache';
 
 use Apache            ();
-use Apache::Constants qw(:common REDIRECT);
+use Apache::Constants qw(OK);
 use Apache::File      ();
 
 sub finalize_headers {
@@ -18,16 +18,7 @@ sub finalize_headers {
     return 0;
 }
 
-sub status_constant {
-    return {
-        200 => OK,
-        301 => REDIRECT,
-        401 => AUTH_REQUIRED,
-        403 => FORBIDDEN,
-        404 => NOT_FOUND,
-        500 => SERVER_ERROR,
-    };
-}
+sub ok_constant { Apache::Constants::OK }
 
 1;
 __END__
@@ -95,15 +86,15 @@ script/myapp_registry.pl (you will need to create this):
     
     MyApp->handle_request( Apache->request );
     
+=head1 METHODS
+
+=head2 ok_constant
+
 =head1 OVERLOADED METHODS
 
 This class overloads some methods from C<Catalyst::Engine::Apache>.
 
-=over 4
-
-=item $c->engine->finalize_headers
-
-=back
+=head2 $c->engine->finalize_headers
 
 =head1 SEE ALSO
 

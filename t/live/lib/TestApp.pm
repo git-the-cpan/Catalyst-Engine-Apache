@@ -12,7 +12,7 @@ TestApp->setup;
 
 sub index : Private {
     my ( $self, $c ) = @_;
-    $c->res->body( 'root index' );
+    $c->res->body('root index');
 }
 
 sub global_action : Private {
@@ -33,8 +33,11 @@ sub execute {
     elsif ( $action =~ /\/(\w+)$/ ) {
         $method = $1;
     }
+    elsif ( $action =~ /^(\w+)$/ ) {
+        $method = $action;
+    }
 
-    if ( $class && $method ) {
+    if ( $class && $method && $method !~ /^_/ ) {
         my $executed = sprintf( "%s->%s", $class, $method );
         my @executed = $c->response->headers->header('X-Catalyst-Executed');
         push @executed, $executed;
@@ -47,4 +50,8 @@ sub execute {
     return $c->SUPER::execute(@_);
 }
 
+{
+    no warnings 'redefine';
+    sub Catalyst::Log::error { }
+}
 1;

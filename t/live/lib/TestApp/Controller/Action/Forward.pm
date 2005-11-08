@@ -15,7 +15,7 @@ sub two : Private {
 
 sub three : Local {
     my ( $self, $c ) = @_;
-    $c->forward('four');
+    $c->forward($self, 'four');
 }
 
 sub four : Private {
@@ -25,13 +25,13 @@ sub four : Private {
 
 sub five : Local {
     my ( $self, $c ) = @_;
-    $c->forward('TestApp::View::Dump::Request');
+    $c->forward('View::Dump::Request');
 }
 
 sub jojo : Local {
     my ( $self, $c ) = @_;
     $c->forward('one');
-    $c->forward('three');
+    $c->forward($c->controller('Action::Forward'), 'three');
 }
 
 sub inheritance : Local {

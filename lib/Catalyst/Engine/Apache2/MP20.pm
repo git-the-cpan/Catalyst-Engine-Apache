@@ -5,22 +5,13 @@ use warnings;
 use base 'Catalyst::Engine::Apache2';
 
 use Apache2::Connection  ();
-use Apache2::Const       -compile => ':common';
+use Apache2::Const       -compile => qw(OK);
 use Apache2::RequestIO   ();
 use Apache2::RequestRec  ();
 use Apache2::RequestUtil ();
 use Apache2::Response    ();
 
-sub status_constant {
-    return {
-        200 => Apache2::Const::OK,
-        301 => Apache2::Const::REDIRECT,
-        401 => Apache2::Const::AUTH_REQUIRED,
-        403 => Apache2::Const::FORBIDDEN,
-        404 => Apache2::Const::NOT_FOUND,
-        500 => Apache2::Const::SERVER_ERROR,
-    };
-}
+sub ok_constant { Apache2::Const::OK }
 
 1;
 __END__
@@ -85,6 +76,10 @@ script/myapp_registry.pl (you will need to create this):
     use MyApp;
     
     MyApp->handle_request( Apache2::RequestUtil->request );
+
+=head1 METHODS
+
+=head2 ok_constant
 
 =head1 SEE ALSO
 

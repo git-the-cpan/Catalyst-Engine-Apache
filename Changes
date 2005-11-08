@@ -1,5 +1,8 @@
 This file documents the revision history for Catalyst::Engine::Apache.
 
+0.99002 2005-11-08 09:00:00
+        - Really fixed the return values and status codes this time!
+
 0.99001 2005-10-25 21:25:00
         - Fixed return value from handler to use the correct
           Apache::Const or Apache2::Const value rather than a numeric
