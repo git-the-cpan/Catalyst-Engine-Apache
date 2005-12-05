@@ -15,10 +15,19 @@ DESCRIPTION
     These classes provide mod_perl support for Catalyst.
 
 METHODS
-    $c->engine->apache
-        Returns an "Apache", "Apache::RequestRec" or "Apache2::RequestRec"
-        object, depending on your mod_perl version. This method is also
-        available as $c->apache.
+  $c->engine->apache
+    Returns an "Apache", "Apache::RequestRec" or "Apache2::RequestRec"
+    object, depending on your mod_perl version. This method is also
+    available as $c->apache.
+
+  $c->engine->return
+    If you need to return something other than OK from the mod_perl handler,
+    you may set any other Apache constant in this method. You should only
+    use this method if you know what you are doing or bad things may happen!
+    For example, to return DECLINED in mod_perl 2:
+
+        use Apache2::Const -compile => qw(DECLINED);
+        $c->engine->return( Apache2::Const::DECLINED );
 
 OVERLOADED METHODS
     This class overloads some methods from "Catalyst::Engine".

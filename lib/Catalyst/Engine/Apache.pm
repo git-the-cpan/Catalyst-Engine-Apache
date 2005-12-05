@@ -7,9 +7,9 @@ use base 'Catalyst::Engine';
 use File::Spec;
 use URI;
 
-our $VERSION = '1.00';
+our $VERSION = '1.01';
 
-__PACKAGE__->mk_accessors(qw/apache/);
+__PACKAGE__->mk_accessors(qw/apache return/);
 
 sub prepare_request {
     my ( $self, $c, $r ) = @_;
@@ -160,7 +160,7 @@ sub finalize_headers {
     # The trick with Apache is to set the status code in $apache->status but
     # always return the OK constant back to Apache from the handler.
     $self->apache->status( $c->response->status );
-    $c->response->status( $self->ok_constant );
+    $c->response->status( $self->return || $self->ok_constant );
 
     my $type = $c->response->header('Content-Type') || 'text/plain';
     $self->apache->content_type( $type );
@@ -205,15 +205,21 @@ These classes provide mod_perl support for Catalyst.
 
 =head1 METHODS
 
-=over 4
-
-=item $c->engine->apache
+=head2 $c->engine->apache
 
 Returns an C<Apache>, C<Apache::RequestRec> or C<Apache2::RequestRec> object,
 depending on your mod_perl version.  This method is also available as
 $c->apache.
 
-=back
+=head2 $c->engine->return
+
+If you need to return something other than OK from the mod_perl handler, 
+you may set any other Apache constant in this method.  You should only use
+this method if you know what you are doing or bad things may happen!
+For example, to return DECLINED in mod_perl 2:
+
+    use Apache2::Const -compile => qw(DECLINED);
+    $c->engine->return( Apache2::Const::DECLINED );
 
 =head1 OVERLOADED METHODS
 

@@ -12,7 +12,7 @@ use Apache::RequestRec  ();
 use Apache::RequestUtil ();
 use Apache::Response    ();
 
-sub ok_constant { Apache::Const::OK }
+sub ok_constant { Apache::OK }
 
 1;
 __END__
