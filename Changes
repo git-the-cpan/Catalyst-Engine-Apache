@@ -1,5 +1,8 @@
 This file documents the revision history for Catalyst::Engine::Apache.
 
+1.02 
+        - Default to text/html, like the standalone server.
+
 1.01    2005-12-05 14:25:00
         - Added $c->engine->return method to allow custom Apache status
           codes to be returned from the mod_perl handler.

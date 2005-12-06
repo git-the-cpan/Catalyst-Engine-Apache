@@ -7,7 +7,7 @@ use base 'Catalyst::Engine';
 use File::Spec;
 use URI;
 
-our $VERSION = '1.01';
+our $VERSION = '1.02';
 
 __PACKAGE__->mk_accessors(qw/apache return/);
 
@@ -162,7 +162,7 @@ sub finalize_headers {
     $self->apache->status( $c->response->status );
     $c->response->status( $self->return || $self->ok_constant );
 
-    my $type = $c->response->header('Content-Type') || 'text/plain';
+    my $type = $c->response->header('Content-Type') || 'text/html';
     $self->apache->content_type( $type );
 
     if ( my $length = $c->response->content_length ) {

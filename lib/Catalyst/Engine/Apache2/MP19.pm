@@ -49,6 +49,16 @@ Catalyst::Engine::Apache2::MP19 - Catalyst Apache2 mod_perl 1.99x Engine
 
 This is the Catalyst engine specialized for Apache2 mod_perl version 1.99x.
 
+=head1 WARNING
+
+mod_perl 1.99 was the beta version for mod_perl 2.0.  Upgrading to 2.0 is
+strongly recommended.
+
+=head1 CGI ISSUES
+
+In order to run Catalyst under mod_perl 1.99 you will need to downgrade L<CGI>
+to version 3.07, as it has dropped support for 1.99 in later versions.
+
 =head1 ModPerl::Registry
 
 While this method is not recommended, you can also run your Catalyst
