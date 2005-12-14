@@ -1,6 +1,10 @@
 This file documents the revision history for Catalyst::Engine::Apache.
 
-1.02 
+1.03    2005-12-13 22:30:00
+        - Removed dependency on Catalyst because it causes an endless loop
+          when trying to install Cat with AutoInstall.
+
+1.02    2005-12-06 08:35:00
         - Default to text/html, like the standalone server.
 
 1.01    2005-12-05 14:25:00

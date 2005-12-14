@@ -1,15 +1,13 @@
 ---
 name: Catalyst-Engine-Apache
-version: 1.02
+version: 1.03
 author: ~
 abstract: Catalyst Apache Engines
 license: perl
-requires:
-  Catalyst: 5.49_02
 provides:
   Catalyst::Engine::Apache:
     file: lib/Catalyst/Engine/Apache.pm
-    version: 1.02
+    version: 1.03
   Catalyst::Engine::Apache2:
     file: lib/Catalyst/Engine/Apache2.pm
   Catalyst::Engine::Apache2::MP19:
