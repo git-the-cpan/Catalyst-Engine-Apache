@@ -7,7 +7,7 @@ use base 'Catalyst::Engine';
 use File::Spec;
 use URI;
 
-our $VERSION = '1.03';
+our $VERSION = '1.04';
 
 __PACKAGE__->mk_accessors(qw/apache return/);
 
@@ -51,7 +51,7 @@ sub prepare_connection {
 
 sub prepare_query_parameters {
     my ( $self, $c ) = @_;
-    
+
     if ( my $query_string = $self->apache->args ) { # stringify
         $self->SUPER::prepare_query_parameters( $c, $query_string );
     }
@@ -59,15 +59,19 @@ sub prepare_query_parameters {
 
 sub prepare_headers {
     my ( $self, $c ) = @_;
+
     $c->request->method( $self->apache->method );
-    $c->request->header( %{ $self->apache->headers_in } );
+
+    if ( my %headers = %{ $self->apache->headers_in } ) {
+        $c->request->header( %headers );
+    }
 }
 
 sub prepare_path {
     my ( $self, $c ) = @_;
     
     my $scheme = $c->request->secure ? 'https' : 'http';
-    my $host   = $self->apache->hostname;
+    my $host   = $self->apache->hostname || 'localhost';
     my $port   = $self->apache->get_server_port;
     
     # If we are running as a backend proxy, get the true hostname
