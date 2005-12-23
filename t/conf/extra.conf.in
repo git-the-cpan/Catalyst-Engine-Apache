@@ -2,7 +2,7 @@
 <IfDefine APACHE1>
     <IfModule mod_perl.c>
         <Perl>
-            use lib qw(@ServerRoot@/live/lib);
+            use lib qw(@ServerRoot@/lib);
         </Perl>
         
         PerlModule TestApp
@@ -23,7 +23,7 @@
 # mod_perl 2
 <IfDefine !APACHE1>
     <IfModule mod_perl.c>
-        PerlSwitches -I@ServerRoot@/live/lib
+        PerlSwitches -I@ServerRoot@/lib
         
         PerlModule TestApp
         

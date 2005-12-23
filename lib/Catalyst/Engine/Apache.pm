@@ -7,7 +7,7 @@ use base 'Catalyst::Engine';
 use File::Spec;
 use URI;
 
-our $VERSION = '1.04';
+our $VERSION = '1.05';
 
 __PACKAGE__->mk_accessors(qw/apache return/);
 
@@ -156,9 +156,11 @@ sub finalize_headers {
         }
     }
 
-    if ( $c->response->header('Set-Cookie') && $c->response->status >= 300 ) {
-        my @values = $c->response->header('Set-Cookie');
-        $self->apache->err_headers_out->add( 'Set-Cookie' => $_ ) for @values;
+    # persist cookies on error responses
+    if ( $c->response->header('Set-Cookie') && $c->response->status >= 400 ) {
+        for my $cookie ( $c->response->header('Set-Cookie') ) {
+            $self->apache->err_headers_out->add( 'Set-Cookie' => $cookie );
+        }
     }
 
     # The trick with Apache is to set the status code in $apache->status but

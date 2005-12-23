@@ -7,7 +7,7 @@ my $build = Module::Build->new(
     module_name        => 'Catalyst::Engine::Apache',
     create_makefile_pl => 'passthrough',
     test_files   => [
-        glob('t/*.t') 
+        glob('t/0*.t') 
     ],
     create_readme => 1,
 );
