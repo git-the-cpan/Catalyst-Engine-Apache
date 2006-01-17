@@ -1,5 +1,8 @@
 This file documents the revision history for Catalyst::Engine::Apache.
 
+1.06
+        - Removed t/01use.t as it will fail if Catalyst is not installed.
+
 1.05    2005-12-23 10:00:00
         - Fixed double-cookie bug on redirects.
         - Synced tests with Catalyst.
