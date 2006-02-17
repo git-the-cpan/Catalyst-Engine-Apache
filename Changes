@@ -1,6 +1,10 @@
 This file documents the revision history for Catalyst::Engine::Apache.
 
-1.06
+1.07    2006-02-17 17:00:00
+        - Fixed bug: Can't locate object method "FIRSTKEY" via package
+          "APR::Table" when running under mod_perl 2.0.2.
+
+1.06    2006-01-17 16:30:00
         - Removed t/01use.t as it will fail if Catalyst is not installed.
 
 1.05    2005-12-23 10:00:00

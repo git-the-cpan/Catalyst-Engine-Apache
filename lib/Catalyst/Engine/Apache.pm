@@ -7,7 +7,7 @@ use base 'Catalyst::Engine';
 use File::Spec;
 use URI;
 
-our $VERSION = '1.06';
+our $VERSION = '1.07';
 
 __PACKAGE__->mk_accessors(qw/apache return/);
 
