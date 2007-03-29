@@ -10,9 +10,22 @@ use Apache2::RequestIO   ();
 use Apache2::RequestRec  ();
 use Apache2::RequestUtil ();
 use Apache2::Response    ();
+use Apache2::URI         ();
 use APR::Table           ();
 
+# We can use Apache2::ModSSL to better detect if we're running in SSL mode
+eval { require Apache2::ModSSL };
+
 sub ok_constant { Apache2::Const::OK }
+
+sub unescape_uri {
+    my $self = shift;
+
+    my $e = Apache2::URI::unescape_url(@_);
+    $e =~ s/\+/ /g;
+    
+    return $e;
+}
 
 1;
 __END__

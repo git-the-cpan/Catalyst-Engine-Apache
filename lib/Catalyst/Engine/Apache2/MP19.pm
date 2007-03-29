@@ -11,8 +11,18 @@ use Apache::RequestIO   ();
 use Apache::RequestRec  ();
 use Apache::RequestUtil ();
 use Apache::Response    ();
+use Apache::URI         ();
 
 sub ok_constant { Apache::OK }
+
+sub unescape_uri {
+    my $self = shift;
+
+    my $e = Apache::URI::unescape_url(@_);
+    $e =~ s/\+/ /g;
+    
+    return $e;
+}
 
 1;
 __END__

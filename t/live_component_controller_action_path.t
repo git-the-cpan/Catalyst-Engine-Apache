@@ -8,7 +8,7 @@ use lib "$FindBin::Bin/lib";
 
 our $iters;
 
-BEGIN { $iters = $ENV{CAT_BENCH_ITERS} || 2; }
+BEGIN { $iters = $ENV{CAT_BENCH_ITERS} || 1; }
 
 use Test::More tests => 30*$iters;
 use Catalyst::Test 'TestApp';
@@ -27,14 +27,14 @@ sub run_tests {
     {
         ok(
             my $response =
-              request('http://localhost/action/path/a path with spaces'),
+              request('http://localhost/action/path/a%20path%20with%20spaces'),
             'Request'
         );
         ok( $response->is_success, 'Response Successful 2xx' );
         is( $response->content_type, 'text/plain', 'Response Content-Type' );
         is(
             $response->header('X-Catalyst-Action'),
-            'action/path/a path with spaces',
+            'action/path/a%20path%20with%20spaces',
             'Test Action'
         );
         is(
@@ -55,7 +55,7 @@ sub run_tests {
         ok( $response->is_success, 'Response Successful 2xx' );
         is( $response->content_type, 'text/plain', 'Response Content-Type' );
         is( $response->header('X-Catalyst-Action'),
-            'action/path/åäö', 'Test Action' );
+            'action/path/%C3%A5%C3%A4%C3%B6', 'Test Action' );
         is(
             $response->header('X-Test-Class'),
             'TestApp::Controller::Action::Path',

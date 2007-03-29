@@ -1,5 +1,12 @@
 This file documents the revision history for Catalyst::Engine::Apache.
 
+1.08    2007-03-28 22:45:00
+        - Improved prepare_query_parameters performance by using C-based
+          Apache modules instead of URI and URI::Escape.
+        - Improved prepare_path performance by removing the use of URI.pm.
+        - Extract host and port from X-Forwarded-Host.
+        - Use Apache2::ModSSL for determining SSL mode if available.
+
 1.07    2006-02-17 17:00:00
         - Fixed bug: Can't locate object method "FIRSTKEY" via package
           "APR::Table" when running under mod_perl 2.0.2.

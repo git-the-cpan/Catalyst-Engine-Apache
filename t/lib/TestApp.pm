@@ -1,7 +1,12 @@
 package TestApp;
 
 use strict;
-use Catalyst qw/Test::Errors Test::Headers Test::Plugin/;
+use Catalyst qw/
+    Test::Errors 
+    Test::Headers 
+    Test::Plugin
+    +TestApp::Plugin::FullyQualified
+/;
 use Catalyst::Utils;
 
 our $VERSION = '0.01';
@@ -50,9 +55,33 @@ sub execute {
     return $c->SUPER::execute(@_);
 }
 
-sub class_forward_test_method {
+# Replace the very large HTML error page with
+# useful info if something crashes during a test
+sub finalize_error {
+    my $c = shift;
+    
+    $c->NEXT::finalize_error(@_);
+    
+    $c->res->status(500);
+    $c->res->body( 'FATAL ERROR: ' . join( ', ', @{ $c->error } ) );
+}
+
+sub class_forward_test_method :Private {
     my ( $self, $c ) = @_;
     $c->response->headers->header( 'X-Class-Forward-Test-Method' => 1 );
+}
+
+sub loop_test : Local {
+    my ( $self, $c ) = @_;
+
+    for( 1..1001 ) {
+        $c->forward( 'class_forward_test_method' );
+    }
+}
+
+sub recursion_test : Local {
+    my ( $self, $c ) = @_;
+    $c->forward( 'recursion_test' );
 }
 
 {

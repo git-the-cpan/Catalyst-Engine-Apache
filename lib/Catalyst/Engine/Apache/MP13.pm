@@ -7,6 +7,7 @@ use base 'Catalyst::Engine::Apache';
 use Apache            ();
 use Apache::Constants qw(OK);
 use Apache::File      ();
+use Apache::Util      ();
 
 sub finalize_headers {
     my ( $self, $c ) = @_;
@@ -19,6 +20,13 @@ sub finalize_headers {
 }
 
 sub ok_constant { Apache::Constants::OK }
+
+sub unescape_uri {
+    my $self = shift;
+
+    # Unlike in mod_perl 2, this method also unescapes '+' to space
+    return Apache::Util::unescape_uri_info(@_);
+}
 
 1;
 __END__

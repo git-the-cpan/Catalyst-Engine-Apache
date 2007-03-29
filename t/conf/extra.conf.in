@@ -23,6 +23,10 @@
 # mod_perl 2
 <IfDefine !APACHE1>
     <IfModule mod_perl.c>
+
+        # Needed to pass some %2F tests
+        AllowEncodedSlashes on
+
         PerlSwitches -I@ServerRoot@/lib
         
         PerlModule TestApp

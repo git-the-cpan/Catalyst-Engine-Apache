@@ -7,7 +7,7 @@ use base 'Catalyst::Engine';
 use File::Spec;
 use URI;
 
-our $VERSION = '1.07';
+our $VERSION = '1.08';
 
 __PACKAGE__->mk_accessors(qw/apache return/);
 
@@ -18,41 +18,42 @@ sub prepare_request {
 
 sub prepare_connection {
     my ( $self, $c ) = @_;
-    
+
     $c->request->address( $self->apache->connection->remote_ip );
-    
+
     PROXY_CHECK:
     {
         my $headers = $self->apache->headers_in;
         unless ( $c->config->{using_frontend_proxy} ) {
             last PROXY_CHECK if $c->request->address ne '127.0.0.1';
             last PROXY_CHECK if $c->config->{ignore_frontend_proxy};
-        }
+        }        
         last PROXY_CHECK unless $headers->{'X-Forwarded-For'};
-        
+
         # If we are running as a backend server, the user will always appear
         # as 127.0.0.1. Select the most recent upstream IP (last in the list)
         my ($ip) = $headers->{'X-Forwarded-For'} =~ /([^,\s]+)$/;
         $c->request->address( $ip );
     }
-    
+
     $c->request->hostname( $self->apache->connection->remote_host );
     $c->request->protocol( $self->apache->protocol );
     $c->request->user( $self->apache->user );
 
-    if ( $ENV{HTTPS} && uc $ENV{HTTPS} eq 'ON' ) {
-        $c->request->secure(1);
+    # when config options are set, check them here first
+    if ($INC{'Apache2/ModSSL.pm'}) {
+        $c->request->secure(1) if $self->apache->connection->is_https;
+    } else {
+        my $https = $self->apache->subprocess_env('HTTPS'); 
+        $c->request->secure(1) if defined $https and uc $https eq 'ON';
     }
 
-    if ( $self->apache->get_server_port == 443 ) {
-        $c->request->secure(1);
-    }
 }
 
 sub prepare_query_parameters {
     my ( $self, $c ) = @_;
-
-    if ( my $query_string = $self->apache->args ) { # stringify
+    
+    if ( my $query_string = $self->apache->args ) {
         $self->SUPER::prepare_query_parameters( $c, $query_string );
     }
 }
@@ -69,11 +70,11 @@ sub prepare_headers {
 
 sub prepare_path {
     my ( $self, $c ) = @_;
-    
+
     my $scheme = $c->request->secure ? 'https' : 'http';
     my $host   = $self->apache->hostname || 'localhost';
     my $port   = $self->apache->get_server_port;
-    
+
     # If we are running as a backend proxy, get the true hostname
     PROXY_CHECK:
     {
@@ -82,14 +83,20 @@ sub prepare_path {
             last PROXY_CHECK if $c->config->{ignore_frontend_proxy};
         }
         last PROXY_CHECK unless $c->request->header( 'X-Forwarded-Host' );
-
+        
         $host = $c->request->header( 'X-Forwarded-Host' );
-        # backend could be on any port, so
-        # assume frontend is on the default port
-        $port = $c->request->secure ? 443 : 80;
+
+        if ( $host =~ /^(.+):(\d+)$/ ) {
+            $host = $1;
+            $port = $2;
+        } else {
+            # backend could be on any port, so
+            # assume frontend is on the default port
+            $port = $c->request->secure ? 443 : 80;
+        }
     }
 
-    my $base_path = q{};
+    my $base_path = '';
 
     # Are we running in a non-root Location block?
     my $location = $self->apache->location;
@@ -97,31 +104,46 @@ sub prepare_path {
         $base_path = $location;
     }
     
+    # base must end in a slash
+    $base_path .= '/' unless $base_path =~ m{/$};
+
     # Are we an Apache::Registry script? Why anyone would ever want to run
     # this way is beyond me, but we'll support it!
-    if ( $self->apache->filename && -f $self->apache->filename && -x _ ) {
+    # XXX: This needs a test
+    if ( defined $ENV{SCRIPT_NAME} && $self->apache->filename && -f $self->apache->filename && -x _ ) {
         $base_path .= $ENV{SCRIPT_NAME};
     }
     
-    my $uri = URI->new;
-    $uri->scheme($scheme);
-    $uri->host($host);
-    $uri->port($port);
-    $uri->path( $self->apache->uri );
-    my $query_string = $self->apache->args;
-    $uri->query( $query_string );
+    # Using URI directly is way too slow, so we construct the URLs manually
+    my $uri_class = "URI::$scheme";
+    
+    if ( $port != 80 && $host !~ /:/ ) {
+        $host .= ":$port";
+    }
+    
+    # Escape the path
+    my $path = $self->apache->uri;
+    $path   =~ s{^/+}{};
+    $path   =~ s/([^$URI::uric])/$URI::Escape::escapes{$1}/go;
+    $path   =~ s/\?/%3F/g; # STUPID STUPID SPECIAL CASE
+    
+    # If the path is contained within the base, we need to make the path
+    # match base.  This handles the case where the app is running at /deep/path
+    # but a request to /deep/path fails where /deep/path/ does not.
+    if ( $base_path ne '/' && $base_path ne $path && $base_path =~ m{/$path} ) {
+        $path = $base_path;
+        $path =~ s{^/+}{};
+    }
+    
+    my $qs    = $self->apache->args;
+    my $query = $qs ? '?' . $qs : '';
+    my $uri   = $scheme . '://' . $host . '/' . $path . $query;
 
-    # sanitize the URI
-    $uri = $uri->canonical;
-    $c->request->uri( $uri );
+    $c->request->uri( bless \$uri, $uri_class );
+    
+    my $base_uri = $scheme . '://' . $host . $base_path;
 
-    # set the base URI
-    # base must end in a slash
-    $base_path .= '/' unless ( $base_path =~ /\/$/ );
-    my $base = $uri->clone;
-    $base->path_query( $base_path );
-    $base = $base->canonical;
-    $c->request->base( $base );
+    $c->request->base( bless \$base_uri, $uri_class );
 }
 
 sub read_chunk {
@@ -180,8 +202,8 @@ sub finalize_headers {
 
 sub write {
     my ( $self, $c, $buffer ) = @_;
-    
-    if ( ! $self->apache->connection->aborted ) {
+
+    if ( ! $self->apache->connection->aborted && defined $buffer) {
         return $self->apache->print( $buffer );
     }
     return;

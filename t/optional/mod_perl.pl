@@ -6,6 +6,12 @@
 # httpd.conf:
 # 
 # perl t/optional/mod_perl.pl -httpd_conf /etc/apache/httpd.conf
+#
+# For debugging, you can start TestApp and leave it running with
+# perl t/optional/mod_perl.pl -httpd_conf /etc/apache/httpd.conf --start-httpd
+#
+# To stop it:
+# perl t/optional/mod_perl.pl -httpd_conf /etc/apache/httpd.conf --stop-httpd
 
 use strict;
 use warnings;
