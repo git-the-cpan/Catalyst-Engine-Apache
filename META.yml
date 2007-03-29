@@ -1,6 +1,6 @@
 ---
 name: Catalyst-Engine-Apache
-version: 1.08
+version: 1.09
 author:
   - 'Sebastian Riedel, <sri@cpan.org>'
   - 'Christian Hansen, <ch@ngmedia.com>'
@@ -12,7 +12,7 @@ resources:
 provides:
   Catalyst::Engine::Apache:
     file: lib/Catalyst/Engine/Apache.pm
-    version: 1.08
+    version: 1.09
   Catalyst::Engine::Apache2:
     file: lib/Catalyst/Engine/Apache2.pm
   Catalyst::Engine::Apache2::MP19:

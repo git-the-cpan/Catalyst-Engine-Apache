@@ -1,5 +1,9 @@
 This file documents the revision history for Catalyst::Engine::Apache.
 
+1.09    2007-03-28 23:00:00
+        - Fixed compatibility with older Catalyst versions.  5.7008+
+          is recommended for best performance.
+
 1.08    2007-03-28 22:45:00
         - Improved prepare_query_parameters performance by using C-based
           Apache modules instead of URI and URI::Escape.

@@ -6,8 +6,10 @@ use base 'Catalyst::Engine';
 
 use File::Spec;
 use URI;
+use URI::http;
+use URI::https;
 
-our $VERSION = '1.08';
+our $VERSION = '1.09';
 
 __PACKAGE__->mk_accessors(qw/apache return/);
 
