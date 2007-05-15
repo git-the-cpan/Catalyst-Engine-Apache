@@ -55,7 +55,13 @@ Catalyst::Engine::Apache2::MP20 - Catalyst Apache2 mod_perl 2.x Engine
         <Location /some/other/path>
             SetHandler          perl-script
             PerlResponseHandler MyApp
-        </Location>         
+        </Location>
+        
+        # Make sure to let Apache handle your static files
+        # (And remember to remove the Static::Simple plugin in production)
+        <Location /static>
+            SetHandler          default-handler
+        </Location>
     </VirtualHost>
 
 =head1 DESCRIPTION

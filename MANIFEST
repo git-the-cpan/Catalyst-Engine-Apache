@@ -1,5 +1,15 @@
-Build.PL
 Changes
+inc/Module/AutoInstall.pm
+inc/Module/Install.pm
+inc/Module/Install/AutoInstall.pm
+inc/Module/Install/Base.pm
+inc/Module/Install/Can.pm
+inc/Module/Install/Fetch.pm
+inc/Module/Install/Include.pm
+inc/Module/Install/Makefile.pm
+inc/Module/Install/Metadata.pm
+inc/Module/Install/Win32.pm
+inc/Module/Install/WriteAll.pm
 lib/Catalyst/Engine/Apache.pm
 lib/Catalyst/Engine/Apache/MP13.pm
 lib/Catalyst/Engine/Apache2.pm
@@ -122,5 +132,6 @@ t/live_loop.t
 t/live_plugin_loaded.t
 t/live_priorities.t
 t/live_recursion.t
+t/optional/mod_perl-locationmatch.pl
 t/optional/mod_perl-non-root.pl
 t/optional/mod_perl.pl

@@ -12,6 +12,7 @@ use Apache::RequestRec  ();
 use Apache::RequestUtil ();
 use Apache::Response    ();
 use Apache::URI         ();
+use APR::Table          ();
 
 sub ok_constant { Apache::OK }
 
@@ -52,7 +53,13 @@ Catalyst::Engine::Apache2::MP19 - Catalyst Apache2 mod_perl 1.99x Engine
         <Location /some/other/path>
             SetHandler          perl-script
             PerlResponseHandler MyApp
-        </Location>        
+        </Location>
+        
+        # Make sure to let Apache handle your static files
+        # (And remember to remove the Static::Simple plugin in production)
+        <Location /static>
+            SetHandler          default-handler
+        </Location>   
     </VirtualHost>
 
 =head1 DESCRIPTION

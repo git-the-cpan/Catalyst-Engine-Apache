@@ -9,7 +9,13 @@ use URI;
 use URI::http;
 use URI::https;
 
-our $VERSION = '1.09';
+use mod_perl;
+use constant MP2 => ( 
+    exists $ENV{MOD_PERL_API_VERSION} and 
+           $ENV{MOD_PERL_API_VERSION} >= 2
+);
+
+our $VERSION = '1.10';
 
 __PACKAGE__->mk_accessors(qw/apache return/);
 
@@ -106,6 +112,40 @@ sub prepare_path {
         $base_path = $location;
     }
     
+    # Using URI directly is way too slow, so we construct the URLs manually
+    my $uri_class = "URI::$scheme";
+    
+    if ( $port != 80 && $host !~ /:/ ) {
+        $host .= ":$port";
+    }
+    
+    # We want the path before Apache escapes it.  Under mod_perl2 this is available
+    # with the unparsed_uri method.  Under mod_perl 1 we must parse it out of the
+    # request line.
+    my ($path, $qs);
+    
+    if ( MP2 ) {
+        ($path, $qs) = split /\?/, $self->apache->unparsed_uri, 2;
+    }
+    else {
+        my (undef, $path_query) = split / /, $self->apache->the_request, 3;
+        ($path, $qs)            = split /\?/, $path_query, 2;
+    }
+    
+    # Check if $base_path appears to be a regex (contains invalid characters),
+    # meaning we're in a LocationMatch block
+    if ( $base_path =~ m/[^$URI::uric]/o ) {
+        # Find out what part of the URI path matches the LocationMatch regex,
+        # that will become our base
+        my $match = qr/($base_path)/;
+        my ($base_match) = $path =~ $match;
+        
+        $base_path = $base_match;
+    }
+
+    # Strip leading slash
+    $path =~ s{^/+}{};
+    
     # base must end in a slash
     $base_path .= '/' unless $base_path =~ m{/$};
 
@@ -116,19 +156,6 @@ sub prepare_path {
         $base_path .= $ENV{SCRIPT_NAME};
     }
     
-    # Using URI directly is way too slow, so we construct the URLs manually
-    my $uri_class = "URI::$scheme";
-    
-    if ( $port != 80 && $host !~ /:/ ) {
-        $host .= ":$port";
-    }
-    
-    # Escape the path
-    my $path = $self->apache->uri;
-    $path   =~ s{^/+}{};
-    $path   =~ s/([^$URI::uric])/$URI::Escape::escapes{$1}/go;
-    $path   =~ s/\?/%3F/g; # STUPID STUPID SPECIAL CASE
-    
     # If the path is contained within the base, we need to make the path
     # match base.  This handles the case where the app is running at /deep/path
     # but a request to /deep/path fails where /deep/path/ does not.
@@ -137,7 +164,6 @@ sub prepare_path {
         $path =~ s{^/+}{};
     }
     
-    my $qs    = $self->apache->args;
     my $query = $qs ? '?' . $qs : '';
     my $uri   = $scheme . '://' . $host . '/' . $path . $query;
 

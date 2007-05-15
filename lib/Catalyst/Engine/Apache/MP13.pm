@@ -59,6 +59,12 @@ Catalyst::Engine::Apache::MP13 - Catalyst Apache mod_perl 1.3x Engine
             SetHandler      perl-script
             PerlHandler     MyApp
         </Location>
+        
+        # Make sure to let Apache handle your static files
+        # (And remember to remove the Static::Simple plugin in production)
+        <Location /static>
+            SetHandler      default-handler
+        </Location>
     </VirtualHost>
     
 =head1 DESCRIPTION

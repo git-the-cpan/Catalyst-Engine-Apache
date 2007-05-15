@@ -42,6 +42,12 @@
             PerlResponseHandler TestApp
         </Location>
         
+        # test LocationMatch (RT 26921)
+        <LocationMatch ^/match/(this|that)*>
+            SetHandler          modperl
+            PerlResponseHandler TestApp
+        </LocationMatch>
+        
         # test using the perl-script handler
         <Location /oldscript>
             SetHandler          perl-script

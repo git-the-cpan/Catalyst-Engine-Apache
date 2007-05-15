@@ -1,27 +1,18 @@
----
-name: Catalyst-Engine-Apache
-version: 1.09
-author:
-  - 'Sebastian Riedel, <sri@cpan.org>'
-  - 'Christian Hansen, <ch@ngmedia.com>'
-  - 'Andy Grundman, <andy@hybridized.org>'
+--- 
 abstract: Catalyst Apache Engines
+author: Sebastian Riedel, <sri@cpan.org>
+distribution_type: module
+generated_by: Module::Install version 0.65
 license: perl
-resources:
-  license: http://dev.perl.org/licenses/
-provides:
-  Catalyst::Engine::Apache:
-    file: lib/Catalyst/Engine/Apache.pm
-    version: 1.09
-  Catalyst::Engine::Apache2:
-    file: lib/Catalyst/Engine/Apache2.pm
-  Catalyst::Engine::Apache2::MP19:
-    file: lib/Catalyst/Engine/Apache2/MP19.pm
-  Catalyst::Engine::Apache2::MP20:
-    file: lib/Catalyst/Engine/Apache2/MP20.pm
-  Catalyst::Engine::Apache::MP13:
-    file: lib/Catalyst/Engine/Apache/MP13.pm
-generated_by: Module::Build version 0.2806
-meta-spec:
-  url: http://module-build.sourceforge.net/META-spec-v1.2.html
-  version: 1.2
+meta-spec: 
+  url: http://module-build.sourceforge.net/META-spec-v1.3.html
+  version: 1.3
+name: Catalyst-Engine-Apache
+no_index: 
+  directory: 
+    - inc
+    - t
+requires: 
+  Catalyst::Runtime: 0
+tests: t/0*.t
+version: 1.10

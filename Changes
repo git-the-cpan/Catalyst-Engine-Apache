@@ -1,5 +1,12 @@
 This file documents the revision history for Catalyst::Engine::Apache.
 
+1.10    2007-05-15 17:40:00
+        - Properly detect the base when running within a LocationMatch block.
+        - Use the unparsed URI for building the path instead of Apache's
+          pre-parsed URI.
+        - Load APR::Table when using mod_perl 1.99.
+        - Switch to Module::Install.
+
 1.09    2007-03-28 23:00:00
         - Fixed compatibility with older Catalyst versions.  5.7008+
           is recommended for best performance.
