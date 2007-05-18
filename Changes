@@ -1,5 +1,8 @@
 This file documents the revision history for Catalyst::Engine::Apache.
 
+1.11    2007-05-18 08:30:00
+        - Don't 'use mod_perl;' as this may not work on some mod_perl installations.
+
 1.10    2007-05-15 17:40:00
         - Properly detect the base when running within a LocationMatch block.
         - Use the unparsed URI for building the path instead of Apache's

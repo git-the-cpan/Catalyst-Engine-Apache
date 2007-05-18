@@ -9,13 +9,12 @@ use URI;
 use URI::http;
 use URI::https;
 
-use mod_perl;
 use constant MP2 => ( 
     exists $ENV{MOD_PERL_API_VERSION} and 
            $ENV{MOD_PERL_API_VERSION} >= 2
 );
 
-our $VERSION = '1.10';
+our $VERSION = '1.11';
 
 __PACKAGE__->mk_accessors(qw/apache return/);
 

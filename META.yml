@@ -15,4 +15,4 @@ no_index:
 requires: 
   Catalyst::Runtime: 0
 tests: t/0*.t
-version: 1.10
+version: 1.11
