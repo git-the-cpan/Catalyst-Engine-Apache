@@ -17,12 +17,10 @@ use APR::Table          ();
 sub ok_constant { Apache::OK }
 
 sub unescape_uri {
-    my $self = shift;
-
-    my $e = Apache::URI::unescape_url(@_);
-    $e =~ s/\+/ /g;
+    my ( $self, $str ) = @_;
     
-    return $e;
+    $str =~ s/\+/ /g;
+    return Apache::URI::unescape_url($str);
 }
 
 1;

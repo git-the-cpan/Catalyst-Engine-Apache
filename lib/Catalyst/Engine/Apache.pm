@@ -14,13 +14,14 @@ use constant MP2 => (
            $ENV{MOD_PERL_API_VERSION} >= 2
 );
 
-our $VERSION = '1.11';
+our $VERSION = '1.12';
 
 __PACKAGE__->mk_accessors(qw/apache return/);
 
 sub prepare_request {
     my ( $self, $c, $r ) = @_;
     $self->apache( $r );
+    $self->return( undef );
 }
 
 sub prepare_connection {
@@ -114,7 +115,7 @@ sub prepare_path {
     # Using URI directly is way too slow, so we construct the URLs manually
     my $uri_class = "URI::$scheme";
     
-    if ( $port != 80 && $host !~ /:/ ) {
+    if ( $port !~ /^(?:80|443)$/ && $host !~ /:/ ) {
         $host .= ":$port";
     }
     
@@ -131,15 +132,21 @@ sub prepare_path {
         ($path, $qs)            = split /\?/, $path_query, 2;
     }
     
+    # Don't check for LocationMatch blocks if requested
+    # http://rt.cpan.org/Ticket/Display.html?id=26921
+    if ( $self->apache->dir_config('CatalystDisableLocationMatch') ) {
+        $base_path = '';
+    }
+        
     # Check if $base_path appears to be a regex (contains invalid characters),
     # meaning we're in a LocationMatch block
-    if ( $base_path =~ m/[^$URI::uric]/o ) {
+    elsif ( $base_path =~ m/[^$URI::uric]/o ) {
         # Find out what part of the URI path matches the LocationMatch regex,
         # that will become our base
         my $match = qr/($base_path)/;
         my ($base_match) = $path =~ $match;
         
-        $base_path = $base_match;
+        $base_path = $base_match || '';
     }
 
     # Strip leading slash
@@ -275,6 +282,24 @@ For example, to return DECLINED in mod_perl 2:
 
     use Apache2::Const -compile => qw(DECLINED);
     $c->engine->return( Apache2::Const::DECLINED );
+
+=head2 NOTES ABOUT LOCATIONMATCH
+
+The Apache engine tries to figure out the correct base path if your app is
+running within a LocationMatch block.  For example:
+
+    <LocationMatch ^/match/(this|that)*>
+        SetHandler          modperl
+        PerlResponseHandler MyApp
+    </LocationMatch>
+
+This will correctly set the base path to '/match/this/' or '/match/that/' depending
+on which path was used for the request.
+
+In some cases this may not be what you want, so you can disable this behavior
+by adding this to your configuration:
+
+    PerlSetVar CatalystDisableLocationMatch 1
 
 =head1 OVERLOADED METHODS
 

@@ -19,12 +19,10 @@ eval { require Apache2::ModSSL };
 sub ok_constant { Apache2::Const::OK }
 
 sub unescape_uri {
-    my $self = shift;
-
-    my $e = Apache2::URI::unescape_url(@_);
-    $e =~ s/\+/ /g;
+    my ( $self, $str ) = @_;
     
-    return $e;
+    $str =~ s/\+/ /g;
+    return Apache2::URI::unescape_url($str);
 }
 
 1;

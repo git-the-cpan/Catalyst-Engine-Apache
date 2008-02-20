@@ -1,5 +1,16 @@
 This file documents the revision history for Catalyst::Engine::Apache.
 
+1.12    2008-02-20 09:00:00
+        - Fixed bug where %2b in query parameter is doubly decoded to ' ', instead of '+' 
+          (Gavin Henry, Tatsuhiko Miyagawa)
+        - Fixed bug where req->base and req->uri would include a port number when running 
+          in SSL mode.
+        - Fixed warning when a non-trivial regex is used in a LocationMatch block.
+          (Steffen Schwigon)
+        - Clear the value of $c->engine->return() before each request.
+        - Added support for 'PerlSetVar CatalystDisableLocationMatch 1' to disable check
+          for a LocationMatch regex to set base path.
+
 1.11    2007-05-18 08:30:00
         - Don't 'use mod_perl;' as this may not work on some mod_perl installations.
 
