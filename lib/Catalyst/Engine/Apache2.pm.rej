@@ -1,0 +1,17 @@
+***************
+*** 40,46 ****
+  
+  =over 4
+  
+- =item $c->engine->finalize_headers
+  
+  =back
+  
+--- 40,46 ----
+  
+  =over 4
+  
++ =item finalize_headers
+  
+  =back
+  

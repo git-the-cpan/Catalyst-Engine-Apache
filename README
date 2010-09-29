@@ -29,18 +29,42 @@ METHODS
         use Apache2::Const -compile => qw(DECLINED);
         $c->engine->return( Apache2::Const::DECLINED );
 
+  NOTES ABOUT LOCATIONMATCH
+    The Apache engine tries to figure out the correct base path if your app
+    is running within a LocationMatch block. For example:
+
+        <LocationMatch ^/match/(this|that)*>
+            SetHandler          modperl
+            PerlResponseHandler MyApp
+        </LocationMatch>
+
+    This will correctly set the base path to '/match/this/' or
+    '/match/that/' depending on which path was used for the request.
+
+    In some cases this may not be what you want, so you can disable this
+    behavior by adding this to your configuration:
+
+        PerlSetVar CatalystDisableLocationMatch 1
+
+  NOTES ON NON-STANDARD PORTS
+    If you wish to run your site on a non-standard port you will need to use
+    the "Port" Apache config rather than "Listen". This will result in the
+    correct port being added to urls created using "uri_for".
+
+        Port 8080
+
 OVERLOADED METHODS
     This class overloads some methods from "Catalyst::Engine".
 
-    $c->engine->prepare_request($r)
-    $c->engine->prepare_connection
-    $c->engine->prepare_query_parameters
-    $c->engine->prepare_headers
-    $c->engine->prepare_path
-    $c->engine->read_chunk
-    $c->engine->finalize_body
-    $c->engine->finalize_headers
-    $c->engine->write
+    prepare_request($r)
+    prepare_connection
+    prepare_query_parameters
+    prepare_headers
+    prepare_path
+    read_chunk
+    finalize_body
+    finalize_headers
+    write
 
 SEE ALSO
     Catalyst Catalyst::Engine.

@@ -40,7 +40,7 @@ This class overloads some methods from C<Catalyst::Engine>.
 
 =over 4
 
-=item $c->engine->finalize_headers
+=item finalize_headers
 
 =back
 

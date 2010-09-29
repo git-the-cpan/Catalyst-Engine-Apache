@@ -14,7 +14,8 @@ use constant MP2 => (
            $ENV{MOD_PERL_API_VERSION} >= 2
 );
 
-our $VERSION = '1.12';
+our $VERSION = '1.13_01';
+$VERSION = eval $VERSION;
 
 __PACKAGE__->mk_accessors(qw/apache return/);
 
@@ -47,6 +48,7 @@ sub prepare_connection {
     $c->request->hostname( $self->apache->connection->remote_host );
     $c->request->protocol( $self->apache->protocol );
     $c->request->user( $self->apache->user );
+    $c->request->remote_user( $self->apache->user );
 
     # when config options are set, check them here first
     if ($INC{'Apache2/ModSSL.pm'}) {
@@ -301,29 +303,37 @@ by adding this to your configuration:
 
     PerlSetVar CatalystDisableLocationMatch 1
 
+=head2 NOTES ON NON-STANDARD PORTS
+
+If you wish to run your site on a non-standard port you will need to use the
+C<Port> Apache config rather than C<Listen>. This will result in the correct
+port being added to urls created using C<uri_for>.
+
+    Port 8080
+
 =head1 OVERLOADED METHODS
 
 This class overloads some methods from C<Catalyst::Engine>.
 
 =over 4
 
-=item $c->engine->prepare_request($r)
+=item prepare_request($r)
 
-=item $c->engine->prepare_connection
+=item prepare_connection
 
-=item $c->engine->prepare_query_parameters
+=item prepare_query_parameters
 
-=item $c->engine->prepare_headers
+=item prepare_headers
 
-=item $c->engine->prepare_path
+=item prepare_path
 
-=item $c->engine->read_chunk
+=item read_chunk
 
-=item $c->engine->finalize_body
+=item finalize_body
 
-=item $c->engine->finalize_headers
+=item finalize_headers
 
-=item $c->engine->write
+=item write
 
 =back
 

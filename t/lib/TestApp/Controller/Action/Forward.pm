@@ -57,6 +57,11 @@ sub with_method_and_args : Local {
     $c->res->body( $c->req->args->[0] );
 }
 
+sub to_action_object : Local {
+    my ( $self, $c ) = @_;
+    $c->forward($self->action_for('embed'), [qw/mtfnpy/]);
+}
+
 sub args : Local {
     my ( $self, $c, $val ) = @_;
     die "Expected argument 'new', got '$val'" unless $val eq 'new';
@@ -83,6 +88,11 @@ sub embed : Local {
 sub class_forward_test_action : Local {
     my ( $self, $c ) = @_;
     $c->forward(qw/TestApp class_forward_test_method/);
+}
+
+sub forward_to_uri_check : Local {
+    my ( $self, $c ) = @_;
+    $c->forward( 'Action::ForwardTo', 'uri_check' );
 }
 
 1;

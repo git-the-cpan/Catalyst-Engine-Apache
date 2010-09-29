@@ -1,18 +1,27 @@
---- 
-abstract: Catalyst Apache Engines
-author: Sebastian Riedel, <sri@cpan.org>
+---
+abstract: 'Catalyst Apache Engines'
+author:
+  - 'Sebastian Riedel, <sri@cpan.org>'
+build_requires:
+  ExtUtils::MakeMaker: 6.42
+  Test::More: 0.88
+configure_requires:
+  ExtUtils::MakeMaker: 6.42
 distribution_type: module
-generated_by: Module::Install version 0.65
+generated_by: 'Module::Install version 0.99'
 license: perl
-meta-spec: 
-  url: http://module-build.sourceforge.net/META-spec-v1.3.html
-  version: 1.3
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
 name: Catalyst-Engine-Apache
-no_index: 
-  directory: 
+no_index:
+  directory:
     - inc
     - t
-requires: 
-  Catalyst::Runtime: 0
-tests: t/0*.t
-version: 1.12
+requires:
+  Catalyst::Runtime: 5.8
+  Test::More: 0.88
+resources:
+  license: http://dev.perl.org/licenses/
+  repository: http://dev.catalyst.perl.org/repos/Catalyst/Catalyst-Engine-Apache/trunk
+version: 1.13_01

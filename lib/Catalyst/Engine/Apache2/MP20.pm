@@ -56,10 +56,26 @@ Catalyst::Engine::Apache2::MP20 - Catalyst Apache2 mod_perl 2.x Engine
         </Location>
         
         # Make sure to let Apache handle your static files
-        # (And remember to remove the Static::Simple plugin in production)
+        # (It is not necessary to remove the Static::Simple plugin 
+        # in production; Apache will bypass Static::Simple if
+        # configured in this way)
+
         <Location /static>
             SetHandler          default-handler
         </Location>
+ 
+        # If not running at a root location in a VirtualHost,
+        # you'll probably need to set an Alias to the location
+        # of your static files, and allow access to this location:
+
+        Alias /myapp/static /filesystem/path/to/MyApp/root/static
+        <Directory /filesystem/path/to/MyApp/root/static>
+            allow from all
+        </Directory>
+        <Location /myapp/static>
+            SetHandler default-handler
+        </Location>
+
     </VirtualHost>
 
 =head1 DESCRIPTION
@@ -98,6 +114,26 @@ script/myapp_registry.pl (you will need to create this):
 =head1 METHODS
 
 =head2 ok_constant
+
+=head1 OVERLOADED METHODS
+
+This class overloads some methods from C<Catalyst::Engine>.
+
+=over 4
+
+=item unescape_uri 
+
+=back
+
+=head1 OVERLOADED METHODS
+
+This class overloads some methods from C<Catalyst::Engine>.
+
+=over 4
+
+=item unescape_uri 
+
+=back
 
 =head1 SEE ALSO
 

@@ -18,7 +18,7 @@ __PACKAGE__->setup;
 sub execute {
     my $c      = shift;
     my $class  = ref( $c->component( $_[0] ) ) || $_[0];
-    my $action = "$_[1]";
+    my $action = $_[1]->reverse();
 
     my $method;
 
@@ -45,15 +45,5 @@ sub execute {
     return $c->SUPER::execute(@_);
 }
 
+1;
 
-
-sub auto : Private {
-    my ( $self, $c ) = @_;
-    ++$c->stash->{auto_count};
-    return 1;
-}
-
-sub default : Private {
-    my ( $self, $c ) = @_;
-    $c->res->body( sprintf 'default, auto=%d', $c->stash->{auto_count} );
-}

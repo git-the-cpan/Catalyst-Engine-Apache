@@ -3,6 +3,8 @@ package TestApp::Controller::Action::Chained;
 use strict;
 use warnings;
 
+use HTML::Entities;
+
 use base qw/Catalyst::Controller/;
 
 sub begin :Private { }
@@ -15,7 +17,11 @@ sub begin :Private { }
 #
 #   Simple parent/child action test
 #
-sub foo  :PathPart('chained/foo')  :CaptureArgs(1) :Chained('/') { }
+sub foo  :PathPart('chained/foo')  :CaptureArgs(1) :Chained('/') {
+    my ( $self, $c, @args ) = @_;
+    die "missing argument" unless @args;
+    die "more than 1 argument" if @args > 1;
+}
 sub endpoint  :PathPart('end')  :Chained('/action/chained/foo')  :Args(1) { }
 
 #
@@ -174,6 +180,37 @@ sub cc_a_anchor	: Chained('cc_a_link')  PathPart('') 	Args() 		   { }
 sub cc_b		: Chained('cc_base') 	PathPart('b') 				CaptureArgs(0) { }
 sub cc_b_link	: Chained('cc_b') 	 	PathPart('') 				CaptureArgs(1) { }
 sub cc_b_anchor	: Chained('cc_b_link')  PathPart('anchor.html') 	Args() 		   { }
+
+#
+#   Test static paths vs. captures
+#
+
+sub apan        : Chained('/')     CaptureArgs(0) PathPrefix   { }
+sub korv        : Chained('apan')  CaptureArgs(0) PathPart('') { }
+sub wurst       : Chained('apan')  CaptureArgs(1) PathPart('') { }
+sub static_end  : Chained('korv')  Args(0)                     { }
+sub capture_end : Chained('wurst') Args(0)        PathPart('') { }
+
+
+# */search vs doc/*
+sub view : Chained('/') PathPart('chained') CaptureArgs(1) {}
+sub star_search : Chained('view') PathPart('search') Args(0) { }
+sub doc_star : Chained('/') PathPart('chained/doc') Args(1) {}
+
+sub return_arg : Chained('view') PathPart('return_arg') Args(1) {}
+
+sub return_arg_decoded : Chained('/') PathPart('chained/return_arg_decoded') Args(1) {
+    my ($self, $c) = @_;
+    $c->req->args([ map { decode_entities($_) } @{ $c->req->args }]);
+}
+
+sub roundtrip_urifor : Chained('/') PathPart('chained/roundtrip_urifor') CaptureArgs(1) {}
+sub roundtrip_urifor_end : Chained('roundtrip_urifor') PathPart('') Args(1) {
+    my ($self, $c) = @_;
+    # This should round-trip, always - i.e. the uri you put in should come back out.
+    $c->res->body($c->uri_for($c->action, $c->req->captures, @{$c->req->args}, $c->req->parameters));
+    $c->stash->{no_end} = 1;
+}
 
 sub end :Private {
   my ($self, $c) = @_;

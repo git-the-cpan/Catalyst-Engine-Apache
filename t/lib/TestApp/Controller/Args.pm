@@ -1,8 +1,7 @@
 package TestApp::Controller::Args;
 
 use strict;
-use base 'Catalyst::Base';
-use Data::Dumper;
+use base 'Catalyst::Controller';
 
 sub args :Local  {
     my ( $self, $c ) = @_;
