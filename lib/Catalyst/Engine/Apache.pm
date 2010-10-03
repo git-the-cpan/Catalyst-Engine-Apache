@@ -14,8 +14,7 @@ use constant MP2 => (
            $ENV{MOD_PERL_API_VERSION} >= 2
 );
 
-our $VERSION = '1.13_01';
-$VERSION = eval $VERSION;
+our $VERSION = '1.14';
 
 __PACKAGE__->mk_accessors(qw/apache return/);
 
