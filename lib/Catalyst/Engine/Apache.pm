@@ -14,7 +14,7 @@ use constant MP2 => (
            $ENV{MOD_PERL_API_VERSION} >= 2
 );
 
-our $VERSION = '1.14';
+our $VERSION = '1.15';
 
 __PACKAGE__->mk_accessors(qw/apache return/);
 
@@ -340,15 +340,23 @@ This class overloads some methods from C<Catalyst::Engine>.
 
 L<Catalyst> L<Catalyst::Engine>.
 
+=head1 MAINTAINERS
+
+Current maintainer, Tomas Doran (t0m) C<< <bobtfish@bobtfish.net> >>.
+
 =head1 AUTHORS
 
-Sebastian Riedel, <sri@cpan.org>
+Sebastian Riedel, C<< <sri@cpan.org> >>.
 
-Christian Hansen, <ch@ngmedia.com>
+Christian Hansen, C<< <ch@ngmedia.com> >>.
 
-Andy Grundman, <andy@hybridized.org>
+Andy Grundman, C<< <andy@hybridized.org> >>.
 
 =head1 COPYRIGHT
+
+Copyright 2005-2010 by the above above listed "AUTHORS" and "MAINTAINERS".
+
+=head1 LICENSE
 
 This program is free software, you can redistribute it and/or modify it under
 the same terms as Perl itself.

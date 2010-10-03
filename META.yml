@@ -1,7 +1,7 @@
 ---
 abstract: 'Catalyst Apache Engines'
 author:
-  - 'Sebastian Riedel, <sri@cpan.org>'
+  - 'Sebastian Riedel, C<< <sri@cpan.org> >>.'
 build_requires:
   ExtUtils::MakeMaker: 6.42
   Test::More: 0.88
@@ -24,4 +24,4 @@ requires:
 resources:
   license: http://dev.perl.org/licenses/
   repository: http://dev.catalyst.perl.org/repos/Catalyst/Catalyst-Engine-Apache/trunk
-version: 1.14
+version: 1.15
