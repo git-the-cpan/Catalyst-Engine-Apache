@@ -1,4 +1,11 @@
 package Catalyst::Engine::Apache2;
+BEGIN {
+  $Catalyst::Engine::Apache2::AUTHORITY = 'cpan:BOBTFISH';
+}
+BEGIN {
+  $Catalyst::Engine::Apache2::VERSION = '1.16';
+}
+# ABSTRACT: Base class for Apache 1.99x and 2.x Engines
 
 use strict;
 use warnings;
@@ -20,7 +27,12 @@ sub finalize_headers {
 }
 
 1;
+
+
 __END__
+=pod
+
+=encoding utf-8
 
 =head1 NAME
 
@@ -50,15 +62,32 @@ L<Catalyst> L<Catalyst::Engine>.
 
 =head1 AUTHORS
 
-Sebastian Riedel, <sri@cpan.org>
+=over 4
 
-Christian Hansen, <ch@ngmedia.com>
+=item *
 
-Andy Grundman, <andy@hybridized.org>
+Sebastian Riedel <sri@cpan.org>
 
-=head1 COPYRIGHT
+=item *
 
-This program is free software, you can redistribute it and/or modify it under
-the same terms as Perl itself.
+Christian Hansen <ch@ngmedia.com>
+
+=item *
+
+Andy Grundman <andy@hybridized.org>
+
+=item *
+
+Tomas Doran <bobtfish@bobtfish.net>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2010 by The "AUTHORS".
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut
+

@@ -14,8 +14,8 @@ sub execute {
     my ( $class, $action ) = @_;
 
     if ( Scalar::Util::blessed($action)
-	 and $action->name ne "foobar" ) {
-	eval { $c->detach( 'foobar', [$action, 'foo'] ) };
+     and $action->name ne "foobar" ) {
+    eval { $c->detach( 'foobar', [$action, 'foo'] ) };
     }
 
     $c->next::method( @_ );

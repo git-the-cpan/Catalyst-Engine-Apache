@@ -1,4 +1,11 @@
 package Catalyst::Engine::Apache;
+BEGIN {
+  $Catalyst::Engine::Apache::AUTHORITY = 'cpan:BOBTFISH';
+}
+BEGIN {
+  $Catalyst::Engine::Apache::VERSION = '1.16';
+}
+# ABSTRACT: Catalyst Apache Engines
 
 use strict;
 use warnings;
@@ -9,12 +16,10 @@ use URI;
 use URI::http;
 use URI::https;
 
-use constant MP2 => ( 
-    exists $ENV{MOD_PERL_API_VERSION} and 
+use constant MP2 => (
+    exists $ENV{MOD_PERL_API_VERSION} and
            $ENV{MOD_PERL_API_VERSION} >= 2
 );
-
-our $VERSION = '1.15';
 
 __PACKAGE__->mk_accessors(qw/apache return/);
 
@@ -35,7 +40,7 @@ sub prepare_connection {
         unless ( $c->config->{using_frontend_proxy} ) {
             last PROXY_CHECK if $c->request->address ne '127.0.0.1';
             last PROXY_CHECK if $c->config->{ignore_frontend_proxy};
-        }        
+        }
         last PROXY_CHECK unless $headers->{'X-Forwarded-For'};
 
         # If we are running as a backend server, the user will always appear
@@ -53,7 +58,7 @@ sub prepare_connection {
     if ($INC{'Apache2/ModSSL.pm'}) {
         $c->request->secure(1) if $self->apache->connection->is_https;
     } else {
-        my $https = $self->apache->subprocess_env('HTTPS'); 
+        my $https = $self->apache->subprocess_env('HTTPS');
         $c->request->secure(1) if defined $https and uc $https eq 'ON';
     }
 
@@ -61,7 +66,7 @@ sub prepare_connection {
 
 sub prepare_query_parameters {
     my ( $self, $c ) = @_;
-    
+
     if ( my $query_string = $self->apache->args ) {
         $self->SUPER::prepare_query_parameters( $c, $query_string );
     }
@@ -92,7 +97,7 @@ sub prepare_path {
             last PROXY_CHECK if $c->config->{ignore_frontend_proxy};
         }
         last PROXY_CHECK unless $c->request->header( 'X-Forwarded-Host' );
-        
+
         $host = $c->request->header( 'X-Forwarded-Host' );
 
         if ( $host =~ /^(.+):(\d+)$/ ) {
@@ -112,19 +117,19 @@ sub prepare_path {
     if ( $location && $location ne '/' ) {
         $base_path = $location;
     }
-    
+
     # Using URI directly is way too slow, so we construct the URLs manually
     my $uri_class = "URI::$scheme";
-    
+
     if ( $port !~ /^(?:80|443)$/ && $host !~ /:/ ) {
         $host .= ":$port";
     }
-    
+
     # We want the path before Apache escapes it.  Under mod_perl2 this is available
     # with the unparsed_uri method.  Under mod_perl 1 we must parse it out of the
     # request line.
     my ($path, $qs);
-    
+
     if ( MP2 ) {
         ($path, $qs) = split /\?/, $self->apache->unparsed_uri, 2;
     }
@@ -132,13 +137,13 @@ sub prepare_path {
         my (undef, $path_query) = split / /, $self->apache->the_request, 3;
         ($path, $qs)            = split /\?/, $path_query, 2;
     }
-    
+
     # Don't check for LocationMatch blocks if requested
     # http://rt.cpan.org/Ticket/Display.html?id=26921
     if ( $self->apache->dir_config('CatalystDisableLocationMatch') ) {
         $base_path = '';
     }
-        
+
     # Check if $base_path appears to be a regex (contains invalid characters),
     # meaning we're in a LocationMatch block
     elsif ( $base_path =~ m/[^$URI::uric]/o ) {
@@ -146,13 +151,13 @@ sub prepare_path {
         # that will become our base
         my $match = qr/($base_path)/;
         my ($base_match) = $path =~ $match;
-        
+
         $base_path = $base_match || '';
     }
 
     # Strip leading slash
     $path =~ s{^/+}{};
-    
+
     # base must end in a slash
     $base_path .= '/' unless $base_path =~ m{/$};
 
@@ -162,7 +167,7 @@ sub prepare_path {
     if ( defined $ENV{SCRIPT_NAME} && $self->apache->filename && -f $self->apache->filename && -x _ ) {
         $base_path .= $ENV{SCRIPT_NAME};
     }
-    
+
     # If the path is contained within the base, we need to make the path
     # match base.  This handles the case where the app is running at /deep/path
     # but a request to /deep/path fails where /deep/path/ does not.
@@ -170,12 +175,12 @@ sub prepare_path {
         $path = $base_path;
         $path =~ s{^/+}{};
     }
-    
+
     my $query = $qs ? '?' . $qs : '';
     my $uri   = $scheme . '://' . $host . '/' . $path . $query;
 
     $c->request->uri( bless \$uri, $uri_class );
-    
+
     my $base_uri = $scheme . '://' . $host . $base_path;
 
     $c->request->base( bless \$base_uri, $uri_class );
@@ -184,15 +189,15 @@ sub prepare_path {
 sub read_chunk {
     my $self = shift;
     my $c = shift;
-    
+
     $self->apache->read( @_ );
 }
 
 sub finalize_body {
     my ( $self, $c ) = @_;
-    
+
     $self->SUPER::finalize_body($c);
-    
+
     # Data sent using $self->apache->print is buffered, so we need
     # to flush it after we are done writing.
     $self->apache->rflush;
@@ -245,7 +250,12 @@ sub write {
 }
 
 1;
+
+
 __END__
+=pod
+
+=encoding utf-8
 
 =head1 NAME
 
@@ -276,7 +286,7 @@ $c->apache.
 
 =head2 $c->engine->return
 
-If you need to return something other than OK from the mod_perl handler, 
+If you need to return something other than OK from the mod_perl handler,
 you may set any other Apache constant in this method.  You should only use
 this method if you know what you are doing or bad things may happen!
 For example, to return DECLINED in mod_perl 2:
@@ -340,25 +350,34 @@ This class overloads some methods from C<Catalyst::Engine>.
 
 L<Catalyst> L<Catalyst::Engine>.
 
-=head1 MAINTAINERS
-
-Current maintainer, Tomas Doran (t0m) C<< <bobtfish@bobtfish.net> >>.
-
 =head1 AUTHORS
 
-Sebastian Riedel, C<< <sri@cpan.org> >>.
+=over 4
 
-Christian Hansen, C<< <ch@ngmedia.com> >>.
+=item *
 
-Andy Grundman, C<< <andy@hybridized.org> >>.
+Sebastian Riedel <sri@cpan.org>
 
-=head1 COPYRIGHT
+=item *
 
-Copyright 2005-2010 by the above above listed "AUTHORS" and "MAINTAINERS".
+Christian Hansen <ch@ngmedia.com>
 
-=head1 LICENSE
+=item *
 
-This program is free software, you can redistribute it and/or modify it under
-the same terms as Perl itself.
+Andy Grundman <andy@hybridized.org>
+
+=item *
+
+Tomas Doran <bobtfish@bobtfish.net>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2010 by The "AUTHORS".
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut
+

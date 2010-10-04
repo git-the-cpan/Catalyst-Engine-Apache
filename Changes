@@ -1,5 +1,10 @@
 This file documents the revision history for Catalyst::Engine::Apache.
 
+1.16   2010-10-05 00:29:16
+        - No code changes.
+        - Don't ship .rej files in the dist.
+        - Convert to Dist::Zilla.
+
 1.15   2010-10-03 22:07:00
         - Fix license info for debian et all.
 
@@ -18,9 +23,9 @@ This file documents the revision history for Catalyst::Engine::Apache.
         - Update streaming test to latest 5.70
 
 1.12    2008-02-20 09:00:00
-        - Fixed bug where %2b in query parameter is doubly decoded to ' ', instead of '+' 
+        - Fixed bug where %2b in query parameter is doubly decoded to ' ', instead of '+'
           (Gavin Henry, Tatsuhiko Miyagawa)
-        - Fixed bug where req->base and req->uri would include a port number when running 
+        - Fixed bug where req->base and req->uri would include a port number when running
           in SSL mode.
         - Fixed warning when a non-trivial regex is used in a LocationMatch block.
           (Steffen Schwigon)

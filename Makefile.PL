@@ -1,25 +1,51 @@
+
 use strict;
 use warnings;
-use inc::Module::Install 0.91;
-use Module::Install::AuthorRequires;
-use Module::Install::AuthorTests;
 
-name 'Catalyst-Engine-Apache';
-all_from 'lib/Catalyst/Engine/Apache.pm';
 
-requires 'Catalyst::Runtime' => 5.80;
 
-test_requires 'Test::More' => '0.88';
+use ExtUtils::MakeMaker 6.31;
 
-auto_install;
-resources repository => 'http://dev.catalyst.perl.org/repos/Catalyst/Catalyst-Engine-Apache/trunk';
 
-author_requires 'Test::NoTabs';
-author_tests 't/author';
 
-if ($Module::Install::AUTHOR) {
-    system("pod2text lib/Catalyst/Engine/Apache.pm > README")
-        and die;
+my %WriteMakefileArgs = (
+  'ABSTRACT' => 'Catalyst Apache Engines',
+  'AUTHOR' => 'Sebastian Riedel <sri@cpan.org>, Christian Hansen <ch@ngmedia.com>, Andy Grundman <andy@hybridized.org>, Tomas Doran <bobtfish@bobtfish.net>',
+  'BUILD_REQUIRES' => {},
+  'CONFIGURE_REQUIRES' => {
+    'ExtUtils::MakeMaker' => '6.31'
+  },
+  'DISTNAME' => 'Catalyst-Engine-Apache',
+  'EXE_FILES' => [],
+  'LICENSE' => 'perl',
+  'NAME' => 'Catalyst::Engine::Apache',
+  'PREREQ_PM' => {
+    'Catalyst::Runtime' => '5.80'
+  },
+  'VERSION' => '1.16',
+  'test' => {
+    'TESTS' => 't/*.t'
+  }
+);
+
+
+unless ( eval { ExtUtils::MakeMaker->VERSION(6.56) } ) {
+  my $br = delete $WriteMakefileArgs{BUILD_REQUIRES};
+  my $pp = $WriteMakefileArgs{PREREQ_PM};
+  for my $mod ( keys %$br ) {
+    if ( exists $pp->{$mod} ) {
+      $pp->{$mod} = $br->{$mod} if $br->{$mod} > $pp->{$mod};
+    }
+    else {
+      $pp->{$mod} = $br->{$mod};
+    }
+  }
 }
 
-WriteAll;
+delete $WriteMakefileArgs{CONFIGURE_REQUIRES}
+  unless eval { ExtUtils::MakeMaker->VERSION(6.52) };
+
+WriteMakefile(%WriteMakefileArgs);
+
+
+

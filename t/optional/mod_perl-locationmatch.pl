@@ -4,7 +4,7 @@
 #
 # Note, to get this to run properly, you may need to give it the path to your
 # httpd.conf:
-# 
+#
 # perl t/optional/mod_perl-locationmatch.pl -httpd_conf /etc/apache/httpd.conf
 #
 # For debugging, you can start TestApp and leave it running with
